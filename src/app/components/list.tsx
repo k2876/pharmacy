@@ -35,8 +35,8 @@ export default function List({ data }: Props) {
         <Adress>{data?.dutyAddr}</Adress>
         {detail && (
           <DetailInfo>
-            <div>상세정보 : {data?.dutyMapimg ?? "정보없음"}</div>
             <div>전화번호 : {data?.dutyTel1}</div>
+            <div>주소 상세정보 : {data?.dutyMapimg ?? "정보없음"}</div>
             <div>{data?.dutyInf}</div>
             <div>{data?.dutyEtc}</div>
           </DetailInfo>

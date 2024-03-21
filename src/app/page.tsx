@@ -35,7 +35,7 @@ const day: Day = [
 ];
 
 export default function Home() {
-  const [data, setData] = useState<ListInfo[]>([]);
+  const [pharmacyList, setPharmacyList] = useState<ListInfo[]>([]);
   const [nameValue, SetNameValue] = useState("");
   const [firstAdressValue, SetFirstAdressValue] = useState("");
   const [dayValue, SetDayValue] = useState<Day>(day);
@@ -48,9 +48,11 @@ export default function Home() {
         `&QN=${nameValue}` +
         `&Q0=${firstAdressValue}`
     );
-    setData(res?.response?.body?.items?.item);
+    const data = res?.response?.body?.items?.item;
+    const isArray = Array.isArray(data);
+    if (isArray) return setPharmacyList(data);
+    setPharmacyList([data]);
   };
-  console.log(data);
 
   const copy = useDeferredValue(dayValue);
 
@@ -71,7 +73,6 @@ export default function Home() {
     <CommonContaienr>
       <Container>
         <Header>약국 찾기</Header>
-
         <InputBox>
           <SearchInputBox>
             <Input
@@ -104,10 +105,12 @@ export default function Home() {
           ))}
         </DayBox>
         <Count>
-          {data?.length ? `검색결과 ${data?.length}개` : "검색결과가 없습니다"}
+          {pharmacyList?.length
+            ? `검색결과 ${pharmacyList?.length}개`
+            : "검색결과가 없습니다"}
         </Count>
         <ListBox>
-          {data?.map((item) => (
+          {pharmacyList?.map((item) => (
             <List key={item?.hpid} data={item} />
           ))}
         </ListBox>
@@ -130,7 +133,7 @@ const Container = styled.div`
 `;
 const Header = styled.div`
   padding: 5px 10px;
-  font-size: 20px;
+  font-size: 25px;
   font-weight: 700;
   color: ${colors?.main};
 `;
