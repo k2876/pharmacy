@@ -4,120 +4,97 @@ import axios from "axios";
 import styled from "styled-components";
 import CommonContaienr from "./components/CommonContainer";
 import config from "@/assets/config";
-import { useDeferredValue, useEffect, useMemo, useState } from "react";
-import SearchIcon from "@mui/icons-material/Search";
+import { useEffect, useState, useTransition } from "react";
 import List from "./components/list";
 import colors from "@/assets/colors";
-import CheckIcon from "@mui/icons-material/Check";
+import Loading from "./components/loading";
+import Head from "next/head";
 
-// import KakaoMap from "./components/kakaoMap";
-
-type State = {
-  Q0?: string;
-  Q1?: string;
-  QT?: string;
-  QN?: string;
-};
 type Day = {
+  code: number;
   name: string;
-  state: boolean;
 }[];
 
 const day: Day = [
-  { name: "월", state: false },
-  { name: "화", state: false },
-  { name: "수", state: false },
-  { name: "목", state: false },
-  { name: "금", state: false },
-  { name: "토", state: false },
-  { name: "일", state: false },
-  { name: "공휴일", state: false },
+  { code: 1, name: "월요일" },
+  { code: 2, name: "화요일" },
+  { code: 3, name: "수요일" },
+  { code: 4, name: "목요일" },
+  { code: 5, name: "금요일" },
+  { code: 6, name: "토요일" },
+  { code: 7, name: "일요일" },
+  { code: 8, name: "공휴일" },
 ];
 
 export default function Home() {
   const [pharmacyList, setPharmacyList] = useState<ListInfo[]>([]);
   const [nameValue, SetNameValue] = useState("");
   const [firstAdressValue, SetFirstAdressValue] = useState("");
-  const [dayValue, SetDayValue] = useState<Day>(day);
-  const [search, setSearch] = useState<boolean>(false);
+  const [dayValue, SetDayValue] = useState<number>(1);
+  const [isPending, transitionStart] = useTransition();
 
   const post = async () => {
     const { data: res } = await axios.get(
       config.baseUrl +
         `&numOfRows=100` +
         `&QN=${nameValue}` +
-        `&Q0=${firstAdressValue}`
+        `&Q0=${firstAdressValue}` +
+        `&QT=${dayValue}`
     );
     const data = res?.response?.body?.items?.item;
+    if (!data) return setPharmacyList([]);
     const isArray = Array.isArray(data);
     if (isArray) return setPharmacyList(data);
-    setPharmacyList([data]);
+    transitionStart(() => setPharmacyList([data]));
   };
 
-  const copy = useDeferredValue(dayValue);
-
-  const onDayClick = (name: string) => {
-    SetDayValue((prev) =>
-      prev?.map((item) => {
-        if (item?.name !== name) return item;
-        return { ...item, state: !item?.state };
-      })
-    );
-    post();
+  const onSelect = (e: { target: { value: any } }) => {
+    SetDayValue(e?.target?.value);
   };
 
-  useEffect(() => {
-    post();
-  }, []);
   return (
-    <CommonContaienr>
-      <Container>
-        <Header>약국 찾기</Header>
-        <InputBox>
-          <SearchInputBox>
-            <Input
-              placeholder="약국명을 입력해주세요."
-              value={nameValue}
-              onChange={(e) => SetNameValue(e?.target?.value)}
-            />
-          </SearchInputBox>
-
-          <SearchInputBox>
-            <Input
-              placeholder="주소를 입력해주세요."
-              value={firstAdressValue}
-              onChange={(e) => SetFirstAdressValue(e?.target?.value)}
-            />
-          </SearchInputBox>
-
-          <Button onClick={post}>검색</Button>
-        </InputBox>
-
-        <DayBox>
-          {copy?.map((item, i) => (
-            <DayItem
-              className={item?.state ? "active" : ""}
-              onClick={() => onDayClick(item?.name)}
-              key={i}
-            >
-              {item?.name}
-            </DayItem>
-          ))}
-        </DayBox>
-        <Count>
-          {pharmacyList?.length
-            ? `검색결과 ${pharmacyList?.length}개`
-            : "검색결과가 없습니다"}
-        </Count>
-        <ListBox>
-          {pharmacyList?.map((item) => (
-            <List key={item?.hpid} data={item} />
-          ))}
-        </ListBox>
-      </Container>
-
-      {/* <KakaoMap /> */}
-    </CommonContaienr>
+    <>
+      <CommonContaienr>
+        <Container>
+          <Header>약국 찾기</Header>
+          <InputBox>
+            <SearchInputBox>
+              <Input
+                placeholder="약국명을 입력해주세요."
+                value={nameValue}
+                onChange={(e) => SetNameValue(e?.target?.value)}
+              />
+            </SearchInputBox>
+            <SearchInputBox>
+              <Input
+                placeholder="주소를 입력해주세요."
+                value={firstAdressValue}
+                onChange={(e) => SetFirstAdressValue(e?.target?.value)}
+              />
+            </SearchInputBox>
+            <Select onChange={onSelect}>
+              {day?.map((x) => (
+                <option value={x?.code} key={x?.code}>
+                  {x?.name}
+                </option>
+              ))}
+            </Select>
+            <Button onClick={() => transitionStart(() => post())}>검색</Button>
+          </InputBox>
+          <DayBox></DayBox>
+          <Count>{`검색결과 ${pharmacyList?.length}개`}</Count>
+          <ListBox>
+            {isPending ? (
+              <Loading />
+            ) : (
+              pharmacyList?.map((item) => (
+                <List key={item?.rnum + 1} data={item} />
+              ))
+            )}
+          </ListBox>
+        </Container>
+      </CommonContaienr>
+    </>
   );
 }
 
@@ -154,12 +131,14 @@ const Input = styled.input`
   border: 1px solid #ddd;
   border-radius: 20px;
   &:focus {
-    outline: none;
+    outline: 1px solid ${colors?.main};
   }
 `;
-const InputBottom = styled.div`
-  display: flex;
-  gap: 5px;
+const Select = styled.select`
+  width: 100%;
+  padding: 3px 0;
+  background-color: inherit;
+  border-radius: 10px;
 `;
 const Button = styled.div`
   background-color: #4d93f0;
