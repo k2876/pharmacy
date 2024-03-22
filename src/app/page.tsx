@@ -137,7 +137,7 @@ const Input = styled.input`
 `;
 const Select = styled.select`
   width: 100%;
-  padding: 3px 0;
+  padding: 5px;
   background-color: inherit;
   border-radius: 10px;
 `;
