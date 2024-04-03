@@ -105,6 +105,7 @@ const Container = styled.div`
   align-items: center;
   background-color: #f5f5f5;
   cursor: pointer;
+  transition: 0.3s;
   &:last-of-type {
     margin-bottom: 10px;
   }
@@ -133,7 +134,6 @@ const DetailInfo = styled.div`
   flex-direction: column;
   gap: 5px;
   color: #777;
-  transition: 0.2s;
 `;
 const Icon = styled.span`
   color: ${colors?.main};
