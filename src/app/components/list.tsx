@@ -133,6 +133,7 @@ const DetailInfo = styled.div`
   flex-direction: column;
   gap: 5px;
   color: #777;
+  transition: 0.2s;
 `;
 const Icon = styled.span`
   color: ${colors?.main};
